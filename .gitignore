@@ -106,4 +106,3 @@ packages/
 .idea/workspace.xml
 
 *.dockerignore
-/webapp/appsettings.Development.json
