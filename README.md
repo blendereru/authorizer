@@ -71,6 +71,7 @@ This method makes an API call to the `Fingerprint` service to retrieve the data 
 * `VisitorId` – A unique identifier for the visitor.
 * `Confidence Score `– A measure of how accurately the visitor has been identified.
 * `Timestamp` – When the fingerprint was created.
+> Internally, The FingerprintJS API receives your `Request ID` and queries its distributed database.
 
 ### What is the purpose of `RequestId`, `VisitorId` ?
 For every submission of form, a new, unique RequestId is generated. The `VisitorId` is the same for the same browser/device.
@@ -112,9 +113,8 @@ if (confidence < 0.9f)
 ```
 But why is the confidence level of **90%** is set ? Because the user's `VisitorId` can change when user changes in the
 device or browser environment. For example, when updating his browser from version 130 to 131. 
-Also, each user can have at most 4 active session(shown below). What is the purpose behind this ? Imagine that you are creating an education
-platform(something like `Coursera`, or `Khan Academy`). You don't want learners to cheat and use different devices to quickly
-pass the videos you've made. So for this reason you can adjust the number of devices the user can access your site. 
+Also, each user can have at most 4 active sessions(shown below).This prevents user from registering from the same browser, thus
+preventing from fake account registrations. 
 ```csharp
 // Query the database and block the registration request if five or more accounts have
 // been registered with the same Visitor ID in the last seven days (week).
@@ -126,4 +126,5 @@ if (_applicationDbContext.Users.Count(x => x.Fingerprint == Input.VisitorId &&
     return Page();
 }
 ```
+
 
