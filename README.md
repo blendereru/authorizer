@@ -1,12 +1,12 @@
-# authorizer <img src="https://badge.ttsalpha.com/api?label=status&status=passing&color=green" alt="status"/>
+# authorizer <img src="https://badge.ttsalpha.com/api?label=status&status=passing&color=green" alt="status"/> <img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/>
 The project is intended to enable jwt-token based authorization in ASP.NET Core. The typical example of how does jwt access/refresh
 tokens work is explained [here](https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc).
 
 <div align="center">
   <img src="https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens" alt="JWT Badge">
   <a href="https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0"><img src="https://img.shields.io/badge/asp.net%20core-420987?style=flat&logo=dotnet&link=https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0" alt="asp.net core" /></a>
-  <a href="https://fingerprint.com/blog/browser-fingerprinting-csharp/"><img src="https://img.shields.io/badge/Fingerprint-d94d16?style=flat&link=https://fingerprint.com/blog/browser-fingerprinting-csharp/" alt="Fingerprint" /></a><br />
-  <img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/>
+  <a href="https://fingerprint.com/blog/browser-fingerprinting-csharp/"><img src="https://img.shields.io/badge/Fingerprint-d94d16?style=flat&link=https://fingerprint.com/blog/browser-fingerprinting-csharp/" alt="Fingerprint" /></a>
+  <a href="https://nginx.org/en/docs/"><img src="https://img.shields.io/badge/Nginx-09ad14?style=flat&logo=nginx&link=https://nginx.org/en/docs/" alt="Nginx" /></a>
 </div>
 
 
