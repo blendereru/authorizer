@@ -1,4 +1,4 @@
-# authorizer <img src="https://badge.ttsalpha.com/api?label=status&status=passing&color=green" alt="status"/> <img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/>
+# authorizer <img src="https://badge.ttsalpha.com/api?label=status&status=passing&color=green" alt="status"/> <a href="https://github.com/blendereru/authorizer?tab=MIT-1-ov-file"><img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/></a>
 The project is intended to enable jwt-token based authorization in ASP.NET Core. The typical example of how does jwt access/refresh
 tokens work is explained [here](https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc).
 
