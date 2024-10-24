@@ -3,7 +3,7 @@ The project is intended to enable jwt-token based authorization in ASP.NET Core.
 tokens work is explained [here](https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc).
 
 <div align="center">
-  <img src="https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens" alt="JWT Badge">
+  <a href="https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc"><img src="https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens" alt="JWT Badge"></a>
   <a href="https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0"><img src="https://img.shields.io/badge/asp.net%20core-420987?style=flat&logo=dotnet&link=https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0" alt="asp.net core" /></a>
   <a href="https://fingerprint.com/blog/browser-fingerprinting-csharp/"><img src="https://img.shields.io/badge/Fingerprint-d94d16?style=flat&link=https://fingerprint.com/blog/browser-fingerprinting-csharp/" alt="Fingerprint" /></a>
   <a href="https://nginx.org/en/docs/"><img src="https://img.shields.io/badge/Nginx-09ad14?style=flat&logo=nginx&link=https://nginx.org/en/docs/" alt="Nginx" /></a>
@@ -111,8 +111,37 @@ if (confidence < 0.9f)
     return Page();
 }
 ```
-But why is the confidence level of **90%** is set ? Because the user's `VisitorId` can change when user changes in the
-device or browser environment. For example, when updating his browser from version 130 to 131. 
+But why can the confidence score vary? FingerprintJS uses a probabilistic identification approach, meaning it identifies
+users based on multiple browser/device signals. These signals include:
+* Browser type and version
+* Operating system and version
+* Screen resolution and timezone
+* IP address (if available)
+* Installed fonts, plugins, and cookies
+
+The challenge is that not all of these signals are stable. Some of them can change between requests, resulting in a confidence
+score that isn’t perfect.
+
+##### Scenarios That Can Affect the Confidence Score
+
+* Browser Updates or Changes
+
+If the browser or its plugins get updated between form submission and validation, some of the signals may change. This can lower the confidence score.
+* IP Address Change
+
+If the user switches networks (e.g., moving from Wi-Fi to mobile data), the IP address will change, which affects the fingerprint.
+
+When you call  `_fingerprintApi.GetEventAsync(Input.RequestId)` `FingerprintJS` checks if the `Request ID`
+is linked to a specific `Visitor ID`. If a match is found, it compares the current fingerprint signals against the ones that were
+collected when the `Request ID` was first generated.
+
+* If most of the signals match, FingerprintJS assigns a high confidence score (e.g., 98%).
+* If there are small discrepancies (like a browser update), the score may drop (e.g., 85-90%).
+
+Even though the `Request ID` corresponds to a specific visitor, the confidence score reflects the similarity
+between the previously collected signals and the current ones.
+
+
 Also, each user can have at most 4 active sessions(shown below).This prevents user from registering from the same browser, thus
 preventing from fake account registrations. 
 ```csharp
@@ -126,5 +155,7 @@ if (_applicationDbContext.Users.Count(x => x.Fingerprint == Input.VisitorId &&
     return Page();
 }
 ```
+## How do we implement Fingerprint in our project ?
+
 
 
