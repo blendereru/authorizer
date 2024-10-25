@@ -104,5 +104,5 @@ packages/
 .idea/workspace.xml
 .idea/dictionaries
 .idea/workspace.xml
-
 *.dockerignore
+*appsettings.Development.json
