@@ -1,19 +1,53 @@
-@page
-@model JwtService.Views.Account.Register
+@model JwtService.Models.RegisterModel
+<form>
+    <div asp-validation-summary="ModelOnly"></div>
+    <p>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" placeholder="name@example.com" />
+        <span asp-validation-for="Email"></span>
+    </p>
+    <p>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" placeholder="password" />
+        <span asp-validation-for="Password"></span>
+    </p>
+    <p>
+        <label asp-for="ConfirmPassword"></label>
+        <input asp-for="ConfirmPassword" />
+        <span asp-validation-for="ConfirmPassword"></span>
+    </p>
+    <input asp-for="VisitorId" id="visitorId" type="hidden"/>
+    <input asp-for="RequestId" id="requestId" type="hidden"/>
+    <button id="registerSubmit" type="submit">Register</button>
+</form>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
+<script>
+    const fpPromise = import('https://fpjscdn.net/v3/Atg9Y1zT02TTNGOQYbkl')
+        .then(FingerprintJS => FingerprintJS.load());
 
-@{
-    Layout = null;
-}
+    // Get visitorId and enable submit button.
+    fpPromise
+        .then(fp => fp.get())
+        .then(result => {
+            document.querySelector("#visitorId").value = result.visitorId;
+            document.querySelector("#requestId").value = result.requestId;
+            document.querySelector("#registerSubmit").disabled = false;
+        });
 
-<!DOCTYPE html>
+    // Handle form submission with JavaScript.
+    $('#loginForm').on('submit', function (event) {
+        event.preventDefault();  // Prevent default form submission.
 
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-<div>
-    
-</div>
-</body>
-</html>
+        const data = $(this).serialize();  // Serialize form data.
+
+        $.post('/Access/Register', data)  // Send POST request.
+            .done(function (response) {
+                // Save the access token and refresh token to localStorage.
+                localStorage.setItem('access_token', response.access_token);
+                alert('Login successful! Tokens saved to localStorage.');
+            })
+            .fail(function (xhr) {
+                alert('Login failed: ' + xhr.responseText);
+            });
+    });
+</script>
