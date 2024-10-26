@@ -213,7 +213,7 @@ namespace FingerprintAspNetCore.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private ApplicationUser CreateUser()
+        private ApplicationUser  CreateUser()
         {
             try
             {

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Page</title>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+<h1>Welcome to the Index Page!</h1>
+<button id="logoutButton">Logout</button>
+<script>
+    // Load FingerprintJS and get visitorId
+    const fpPromise = import('https://fpjscdn.net/v3/Atg9Y1zT02TTNGOQYbkl')
+        .then(FingerprintJS => FingerprintJS.load());
+
+    let visitorId = ''; // Store visitorId globally.
+
+    // Get the visitorId and save it.
+    fpPromise
+        .then(fp => fp.get())
+        .then(result => {
+            visitorId = result.visitorId; // Save the visitorId for later use.
+            console.log('Fingerprint visitorId:', visitorId);
+        });
+
+    // Function to check if the token is expired.
+    function isTokenExpired(token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload.
+            const expiry = payload.exp * 1000; // Convert expiry to milliseconds.
+            return Date.now() > expiry; // Check if the token is expired.
+        } catch (e) {
+            console.error('Invalid token:', e);
+            return true; // Treat invalid token as expired.
+        }
+    }
+
+    // Function to refresh the access token using the refresh token and fingerprint.
+    async function refreshAccessToken() {
+        try {
+            const response = await fetch('/Account/Refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // no need to pass refresh_token it is set in cookies for server-side
+                    fingerprint: visitorId, // Send the fingerprint with the request.
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to refresh token');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('access_token', data.access_token); // Save new access token.
+            console.log('Access token refreshed successfully.');
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            alert('Session expired. Please log in again.');
+            localStorage.removeItem('access_token'); // Clear tokens on failure.
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/Account/Login'; // Redirect to login page.
+        }
+    }
+    // Function to clear tokens and redirect to login page after logout.
+        async function logout() {
+            try {
+                const response = await fetch('/Account/Logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to log out');
+                }
+    
+                localStorage.removeItem('access_token'); // Clear access token.
+                window.location.href = '/Account/Login'; // Redirect to login page.
+            } catch (error) {
+                console.error('Error during logout:', error);
+                alert('Logout failed. Please try again.');
+            }
+        }
+    
+        // Add behavior to logout button.
+        $('#logoutButton').click(function () {
+            console.log('Logging out...');
+            logout(); // Call the logout function.
+        });
+    // Wait for the document to load and check tokens.
+    $(document).ready(async function () {
+        const accessToken = localStorage.getItem('access_token'); // Retrieve access token.
+
+        if (!accessToken) {
+            window.location.href = '/Account/Login'; // Redirect if no token is found.
+            return;
+        }
+
+        // Wait for visitorId to load before checking token.
+        await fpPromise;
+
+        if (isTokenExpired(accessToken)) {
+            console.log('Access token expired. Attempting to refresh...');
+            await refreshAccessToken(); // Try to refresh the token.
+        }
+
+        // If the token is valid or successfully refreshed, proceed to load the page.
+        console.log('Access token is valid. Loading page...');
+    });
+</script>
+</body>
+</html>

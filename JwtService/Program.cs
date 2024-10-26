@@ -31,5 +31,5 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute("default", "{controller=Account}/{action=Index}/{id?}");
 app.Run();

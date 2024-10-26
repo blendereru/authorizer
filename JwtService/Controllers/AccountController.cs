@@ -205,5 +205,91 @@ public class AccountController : Controller
 
         return View(model);
     }
-    public string Index() => "Hello user";
+
+    [HttpPost]
+    public async Task<IActionResult> Refresh([FromBody] string fingerprint)
+    {
+        
+        if (Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+        {
+            var session = await _db.RefreshSessions
+                .Include(u => u.User)
+                .FirstOrDefaultAsync(r => r.RefreshToken == refreshToken);
+            if (session != null)
+            {
+                var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                if (session.ExpiresIn < now)
+                {
+                    return Unauthorized("Refresh token expired.");
+                }
+                if (session.Fingerprint != fingerprint)
+                {
+                    return BadRequest("Forged visitor id");
+                }
+
+                var user = session.User;
+                var claims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName)
+                };
+                var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    claims: claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(30)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
+                        SecurityAlgorithms.HmacSha256));
+                var newAccessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
+                var randomNumber = new byte[32];
+                using var rng = RandomNumberGenerator.Create();
+                rng.GetBytes(randomNumber);
+                var newRefreshToken = Convert.ToBase64String(randomNumber);
+                var newExpiresIn = DateTimeOffset.UtcNow.AddDays(7).ToUnixTimeMilliseconds();
+                _db.RefreshSessions.Remove(session);
+                var newSession = new RefreshSession()
+                {
+                    User = user,
+                    RefreshToken = newRefreshToken,
+                    ExpiresIn = newExpiresIn,
+                    Fingerprint = fingerprint
+                };
+                _db.RefreshSessions.Add(newSession);
+                await _db.SaveChangesAsync();
+                Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,   // Use HTTPS only.
+                    SameSite = SameSiteMode.Strict, 
+                    Expires = DateTimeOffset.FromUnixTimeMilliseconds(newExpiresIn)
+                });
+                return Ok(new { access_token = newAccessToken });
+            }
+            return Unauthorized("Invalid refresh token.");
+        }
+        return Unauthorized("Refresh token not found.");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        if (Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+        {
+            var session = await _db.RefreshSessions.FirstOrDefaultAsync(r => r.RefreshToken == refreshToken);
+            if (session != null)
+            {
+                _db.RefreshSessions.Remove(session);
+                await _db.SaveChangesAsync();
+            }
+            else
+            {
+                return BadRequest(new { message = "Session not found." }); // Handle case where session does not exist
+            }
+        }
+        Response.Cookies.Delete("refreshToken");
+        return Ok(new { message = "Successfully logged out." });
+    }
+    
+    [HttpGet]
+    public IActionResult Index() => View();
 }
