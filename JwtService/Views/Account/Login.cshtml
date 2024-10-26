@@ -36,7 +36,7 @@
 
         const data = $(this).serialize();  // Serialize form data.
 
-        $.post('/Access/Login', data)  // Send POST request.
+        $.post('/Account/Login', data)  // Send POST request.
             .done(function (response) {
                 // Save the access token and refresh token to localStorage.
                 localStorage.setItem('access_token', response.access_token);
