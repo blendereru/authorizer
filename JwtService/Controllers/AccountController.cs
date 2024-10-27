@@ -80,7 +80,7 @@ public class AccountController : Controller
                 issuer: AuthOptions.ISSUER,
                 audience: AuthOptions.AUDIENCE,
                 claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(30)),
+                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(1)),
                 signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
                     SecurityAlgorithms.HmacSha256));
             var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
@@ -209,7 +209,7 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Refresh([FromBody] string fingerprint)
     {
-        
+        ArgumentNullException.ThrowIfNullOrEmpty(fingerprint);
         if (Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
         {
             var session = await _db.RefreshSessions
@@ -250,6 +250,8 @@ public class AccountController : Controller
                 var newSession = new RefreshSession()
                 {
                     User = user,
+                    Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    UA = Request.Headers["User-Agent"].ToString(),
                     RefreshToken = newRefreshToken,
                     ExpiresIn = newExpiresIn,
                     Fingerprint = fingerprint
