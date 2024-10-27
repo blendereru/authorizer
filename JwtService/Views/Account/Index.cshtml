@@ -70,9 +70,6 @@
         // Function to log out the user by calling the server and clearing tokens.
         async function logout() {
             try {
-                // Ensure visitorId is ready before making the request.
-                await getFingerprint();
-
                 const response = await fetch('/Account/Logout', {
                     method: 'POST',
                     headers: {

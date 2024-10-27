@@ -144,6 +144,139 @@ if (_applicationDbContext.Users.Count(x => x.Fingerprint == Input.VisitorId &&
 }
 ```
 ## How do we implement Fingerprint in our project ?
+Unlike the [FingerprintAspNetCore](FingerprintAspNetCore), we don't use `Identity API` and manage the database operations
+(e.g. `await _db.SaveChangesAsync()`) and sign in users explicitly without the usage of `SignInManager` and `UserManager`.
+When user registers or logs in, javascript client handles the form submission and sets the `access_token` sent by server:
+```javascript
+ // Handle form submission with JavaScript.
+    $('#loginForm').on('submit', function (event) {
+        event.preventDefault();  // Prevent default form submission.
+
+        const data = $(this).serialize();  // Serialize form data.
+
+        $.post('/Account/Register', data)  // Send POST request.
+            .done(function (response) {
+                // Save the access token to localStorage.
+                localStorage.setItem('access_token', response.access_token);
+                alert('Login successful! Tokens saved to localStorage.');
+            })
+            .fail(function (xhr) {
+                alert('Login failed: ' + xhr.responseText);
+            });
+    });
+```
+Besides the `access_token`, server sets the `refresh_token` in cookies in `HttpOnly` mode, thus preventing client to access
+the token. 
+```csharp
+var randomNumber = new byte[32];
+using var rng = RandomNumberGenerator.Create();
+rng.GetBytes(randomNumber);
+var refreshToken = Convert.ToBase64String(randomNumber);
+Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions()
+{
+    HttpOnly = true,
+    Secure = true,
+    SameSite = SameSiteMode.Strict,
+    MaxAge = TimeSpan.FromDays(7)
+});
+```
+Eventually, server sends both `access_token` and `refresh_token` to client. Actually, this is the optional behaviour i was just
+trying to follow the [right implementation](https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc). In our code, 
+the `refreshToken` is set in server-side explicitly(watch the code above). 
+All the code in `Login` and `Register` actions are almost the same. We are actually interested in `Refresh` action's 
+implementation. Firstly, `Index` is the action that serves as the page for "authorized" users only. Before user accesses
+the page, the client checks if user's token is expired:
+```javascript
+// Function to check if the token is expired.
+function isTokenExpired(token) {
+   try {
+       const payload = JSON.parse(atob(token.split('.')[1])); // Decode token payload.
+       const expiry = payload.exp * 1000; // Convert expiry to milliseconds.
+       return Date.now() > expiry; // Check if the token is expired.
+   } catch (e) {
+       console.error('Invalid token:', e);
+       return true; // Treat invalid token as expired.
+   }
+}
+```
+if it is expired, the request to `/Account/Refresh` endpoint is sent:
+```javascript
+const response = await fetch('/Account/Refresh', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(visitorId) //send fingerprint
+});
+```
+Then, the `Refresh` action in `AccountController` retrieves the `fingerprint` along with `refreshToken` from `cookies`.
+We retrieve the corresponding row in database, and upon success, delete the row with the session and insert the newly generated
+session record with update the cookies with the `new refreshToken`:
+```csharp
+var session = await _db.RefreshSessions
+                .Include(u => u.User)
+                .FirstOrDefaultAsync(r => r.RefreshToken == refreshToken);
+_db.RefreshSessions.Remove(session);
+var newSession = new RefreshSession()
+{
+    User = user,
+    Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+    UA = Request.Headers["User-Agent"].ToString(),
+    RefreshToken = newRefreshToken,
+    ExpiresIn = newExpiresIn,
+    Fingerprint = fingerprint
+ };
+_db.RefreshSessions.Add(newSession);
+await _db.SaveChangesAsync();
+Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+{
+     HttpOnly = true,
+     Secure = true,   // Use HTTPS only.
+     SameSite = SameSiteMode.Strict, 
+     Expires = DateTimeOffset.FromUnixTimeMilliseconds(newExpiresIn)
+});
+return Ok(new { access_token = newAccessToken });
+```
+If the refresh token is expired, browser forces the user to re-login:
+```csharp
+var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+if (session.ExpiresIn < now)
+{
+    return Unauthorized("Refresh token expired.");
+}
+```
+
+```javascript
+console.error('Error refreshing token:', error);
+alert('Session expired. Please log in again.');
+localStorage.removeItem('access_token'); // Clear tokens on failure.
+window.location.href = '/Account/Login'; // Redirect to login page.
+```
+The log out process is simple, backend just retrieves the record with the current `refreshToken` from db and deletes it.
+```csharp
+if (Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+{
+    var session = await _db.RefreshSessions.FirstOrDefaultAsync(r => r.RefreshToken == refreshToken);
+    if (session != null)
+    {
+        _db.RefreshSessions.Remove(session);
+        await _db.SaveChangesAsync();
+    }
+    else
+    {
+        return BadRequest(new { message = "Session not found." }); // Handle case where session does not exist
+    }
+}
+```
+It also clears the cookies:
+```csharp
+Response.Cookies.Delete("refreshToken");
+```
+The client removes the `access_token` from localStorage and redirects user to `Login` action:
+```javascript
+localStorage.removeItem('access_token');
+window.location.href = '/Account/Login';
+```
 
 
 
