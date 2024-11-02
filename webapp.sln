@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtService", "JwtService\JwtService.csproj", "{5EE97985-99FF-45F8-8F14-F06726A9FB4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\JwtService", "src\JwtService\JwtService.csproj", "{5EE97985-99FF-45F8-8F14-F06726A9FB4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

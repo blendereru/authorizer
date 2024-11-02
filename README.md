@@ -9,7 +9,7 @@ tokens work is explained [here](https://gist.github.com/zmts/802dc9c3510d79fd40f
 </div> 
 
 ## Description
-The explanation of code in both projects(1 - FingerprintAspNetCore, 2 - JwtService) is provided [here](workflow.md).
+The explanation of code in both projects(1 - FingerprintAspNetCore, 2 - JwtService) is provided [here](specs/workflow.md).
 The project uses `.net` of version `8.0`. The main project is JwtService, whereas the [FingerprintAspNetCore](FingerprintAspNetCore)
 is the project taken from [fingerprint](https://fingerprint.com/blog/browser-fingerprinting-csharp/) documentation, just to
 show you how the fingerprint is typically implemented in your c# application.
