@@ -1,12 +1,11 @@
-# authorizer <img src="https://badge.ttsalpha.com/api?label=status&status=passing&color=green" alt="status"/> <a href="https://github.com/blendereru/authorizer?tab=MIT-1-ov-file"><img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/></a>
+# authorizer 
+<a href="https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc"><img src="https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens" alt="JWT Badge"></a>
+<a href="https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0"><img src="https://img.shields.io/badge/asp.net%20core-420987?style=flat&logo=dotnet&link=https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0" alt="asp.net core" /></a>
+<a href="https://fingerprint.com/blog/browser-fingerprinting-csharp/"><img src="https://img.shields.io/badge/Fingerprint-d94d16?style=flat&logo=javascript&logoColor=black&link=https://fingerprint.com/blog/browser-fingerprinting-csharp" alt="Fingerprint" /></a>
+<a href="https://github.com/blendereru/authorizer?tab=MIT-1-ov-file"><img src="https://badge.ttsalpha.com/api?label=license&status=MIT" alt="license"/></a>
+
 The project is intended to enable jwt-token based authorization in ASP.NET Core. The typical example of how does jwt access/refresh
 tokens work is explained [here](https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc).
-
-<div align="center">
-  <a href="https://gist.github.com/zmts/802dc9c3510d79fd40f9dc38a12bccfc"><img src="https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens" alt="JWT Badge"></a>
-  <a href="https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0"><img src="https://img.shields.io/badge/asp.net%20core-420987?style=flat&logo=dotnet&link=https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-8.0" alt="asp.net core" /></a>
-  <a href="https://fingerprint.com/blog/browser-fingerprinting-csharp/"><img src="https://img.shields.io/badge/Fingerprint-d94d16?style=flat&logo=javascript&logoColor=black&link=https://fingerprint.com/blog/browser-fingerprinting-csharp" alt="Fingerprint" /></a>
-</div> 
 
 ## Description
 The explanation of code in both projects(1 - FingerprintAspNetCore, 2 - JwtService) is provided [here](specs/workflow.md).
